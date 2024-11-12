@@ -1,20 +1,32 @@
-// Lab8_TD.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+// Lab8_TD.cpp : This file contains the 'main' function. Program execution begins and ends there. //
 
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <SFPhysics/PhysicsShapeList.hpp>
 #include <iostream>
+#include <vector>
 
-int main()
-{
-    std::cout << "Hello World!\n";
-}
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
+const int CROSSBOW_X = 100;
+const int DUCK_SPEED = 5;
+const int MAX_SHOTS = 5;
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+class DuckHunterGame {
+private:
+    sf::RenderWindow window;
+    sf::Texture crossbowTexture;
+    sf::Sprite crossbowSprite;
+    sf::Texture duckTexture;
+    sf::Font font;
+    sf::Text scoreText;
+    sf::Text shotsText;
+    int score = 0;
+    int shotsLeft = MAX_SHOTS;
+    sfPhysics::PhysicsShapeList ducks;
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+public:
+    DuckHunterGame() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Duck Hunter") {
+        if (!crossbowTexture.loadFromFile("\\nas01.itap.purdue.edu\puhome\desktop\CGT 215 Files\Lab8_TD\assets\images\crossbow.png") ||
+            !duckTexture.loadFromFile("\\nas01.itap.purdue.edu\puhome\desktop\CGT 215 Files\Lab8_TD\assets\images\duck.png") ||
+            !font.loadFromFile("\\nas01.itap.purdue.edu\puhome\desktop\CGT 215 Files\Lab8_TD\assets\fonts\arial.ttf")) {
