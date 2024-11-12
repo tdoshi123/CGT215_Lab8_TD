@@ -1,7 +1,6 @@
 // Lab8_TD.cpp : This file contains the 'main' function. Program execution begins and ends there. //
 
 #include <SFML/Graphics.hpp>
-#include <SFML/Window.hpp>
 #include <SFPhysics/PhysicsShapeList.hpp>
 #include <iostream>
 #include <vector>
@@ -11,6 +10,7 @@ const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 const int CROSSBOW_X = 100;
 const int DUCK_SPEED = 5;
+const int ARROW_SPEED = 10;
 const int MAX_SHOTS = 5;
 
 class DuckHunterGame {
@@ -19,18 +19,22 @@ private:
     sf::Texture crossbowTexture;
     sf::Sprite crossbowSprite;
     sf::Texture duckTexture;
+    sf::Texture arrowTexture;
     sf::Font font;
     sf::Text scoreText;
     sf::Text shotsText;
     int score = 0;
     int shotsLeft = MAX_SHOTS;
-    sfPhysics::PhysicsShapeList ducks; // List of duck objects
-    
+
+    sfPhysics::PhysicsShapeList<sf::RectangleShape> ducks; // List of duck objects
+    std::vector<sf::RectangleShape> arrows;                 // List of active arrows
+
 public:
     DuckHunterGame() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Duck Hunter") {
         // Load assets
         if (!crossbowTexture.loadFromFile("path/to/crossbow.png") || 
             !duckTexture.loadFromFile("path/to/duck.png") || 
+            !arrowTexture.loadFromFile("path/to/arrow.png") ||
             !font.loadFromFile("path/to/font.ttf")) {
             std::cerr << "Error loading assets\n";
             return;
@@ -87,21 +91,46 @@ public:
         ducks.add(duck);  // Add duck to the PhysicsShapeList
     }
 
-    void update() {
-        // Move ducks and check for collisions
-        for (auto& duck : ducks) {
-            duck.move(DUCK_SPEED, 0);
-            if (duck.getPosition().x > WINDOW_WIDTH) {
-                ducks.remove(duck); // Remove duck if it reaches the end
-            }
-            // Check collision with shot (crossbow) - placeholder logic
-            // Add scoring and removal on collision
-        }
+    void shoot() {
+        sf::RectangleShape arrow(sf::Vector2f(30, 5));  // Arrow size
+        arrow.setTexture(&arrowTexture);
+        arrow.setPosition(CROSSBOW_X + crossbowSprite.getGlobalBounds().width, crossbowSprite.getPosition().y + crossbowSprite.getGlobalBounds().height / 2);
+        arrows.push_back(arrow);  // Add arrow to active arrows list
     }
 
-    void shoot() {
-        // Logic to shoot arrow (placeholder) - to implement arrow movement and collision detection
-        // Increase score on successful hit and update scoreText
+    void update() {
+        // Move ducks and check for collisions with arrows
+        for (auto it = ducks.begin(); it != ducks.end(); ) {
+            it->move(DUCK_SPEED, 0);
+            if (it->getPosition().x > WINDOW_WIDTH) {
+                it = ducks.remove(it);  // Remove duck if it reaches the end
+            } else {
+                ++it;
+            }
+        }
+
+        // Move arrows and check for collisions with ducks
+        for (auto arrowIt = arrows.begin(); arrowIt != arrows.end(); ) {
+            arrowIt->move(ARROW_SPEED, 0);
+            bool hit = false;
+            for (auto duckIt = ducks.begin(); duckIt != ducks.end(); ) {
+                if (arrowIt->getGlobalBounds().intersects(duckIt->getGlobalBounds())) {
+                    // Collision detected: Remove both duck and arrow
+                    duckIt = ducks.remove(duckIt);
+                    hit = true;
+                    score++;
+                    scoreText.setString("Score: " + std::to_string(score));
+                    break;  // Break out of duck loop to process next arrow
+                } else {
+                    ++duckIt;
+                }
+            }
+            if (hit || arrowIt->getPosition().x > WINDOW_WIDTH) {
+                arrowIt = arrows.erase(arrowIt);  // Remove arrow if it hit or left the screen
+            } else {
+                ++arrowIt;
+            }
+        }
     }
 
     void render() {
@@ -109,6 +138,9 @@ public:
         window.draw(crossbowSprite);
         for (const auto& duck : ducks) {
             window.draw(duck);
+        }
+        for (const auto& arrow : arrows) {
+            window.draw(arrow);
         }
         window.draw(scoreText);
         window.draw(shotsText);
