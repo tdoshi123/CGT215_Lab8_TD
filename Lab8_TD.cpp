@@ -32,10 +32,10 @@ private:
 public:
     DuckHunterGame() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Duck Hunter") {
         // Load assets
-        if (!crossbowTexture.loadFromFile("path/to/crossbow.png") || 
-            !duckTexture.loadFromFile("path/to/duck.png") || 
-            !arrowTexture.loadFromFile("path/to/arrow.png") ||
-            !font.loadFromFile("path/to/font.ttf")) {
+        if (!crossbowTexture.loadFromFile("\\nas01.itap.purdue.edu\puhome\desktop\CGT 215 Files\Lab8_TD\assets\images\crossbow.png") || 
+            !duckTexture.loadFromFile("\\nas01.itap.purdue.edu\puhome\desktop\CGT 215 Files\Lab8_TD\assets\images\duck.png") || 
+            !arrowTexture.loadFromFile("\\nas01.itap.purdue.edu\puhome\desktop\CGT 215 Files\Lab8_TD\assets\images\arrow.png") ||
+            !font.loadFromFile("\\nas01.itap.purdue.edu\puhome\desktop\CGT 215 Files\Lab8_TD\assets\fonts\arial.ttf")) {
             std::cerr << "Error loading assets\n";
             return;
         }
