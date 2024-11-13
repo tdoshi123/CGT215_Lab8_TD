@@ -1,5 +1,4 @@
-// Lab8_TD.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+// Lab8_TD.cpp : This file contains the 'main' function. Program execution begins and ends there. //
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -25,6 +24,7 @@ void MoveCrossbow(PhysicsSprite& crossbow, int elapsedMS) {
         newPos.x = newPos.x + (KB_SPEED * elapsedMS);
         crossbow.setCenter(newPos);
     }
+
     if (Keyboard::isKeyPressed(Keyboard::Left)) {
         Vector2f newPos(crossbow.getCenter());
         newPos.x = newPos.x - (KB_SPEED * elapsedMS);
@@ -49,6 +49,7 @@ int main()
         cout << "could not load balloonpop.ogg" << endl;
         exit(5);
     }
+
     Sound popSound;
     popSound.setBuffer(popBuffer);
 
@@ -57,6 +58,7 @@ int main()
         cout << "Failed to load circus.ogg ";
         exit(6);
     }
+
     music.play();
 
     PhysicsSprite& crossBow = *new PhysicsSprite();
@@ -94,6 +96,7 @@ int main()
     Texture redTex;
     LoadTex(redTex, "assets/images/duck.png");
     PhysicsShapeList<PhysicsSprite> ducks;
+
     for (int i(0); i < 6; i++) {
         PhysicsSprite& duck = ducks.Create();
         duck.setTexture(redTex);
@@ -102,6 +105,7 @@ int main()
         duck.setCenter(Vector2f(x, 20 + (sz.y / 2)));
         duck.setVelocity(Vector2f(0.25, 0));
         world.AddPhysicsBody(duck);
+
         duck.onCollision =
             [&drawingArrow, &world, &arrow, &duck, &ducks, &score, &popSound]
             (PhysicsBodyCollisionResult result) {
@@ -113,6 +117,7 @@ int main()
                 ducks.QueueRemove(duck);
                 score += 10;
             }
+
             };
     }
 
@@ -123,10 +128,12 @@ int main()
         };
 
     Font fnt;
+
     if (!fnt.loadFromFile("assets/fonts/arial.ttf")) {
         cout << "Could not load font." << endl;
         exit(3);
     }
+
     Clock clock;
     Time lastTime(clock.getElapsedTime());
     Time currentTime(lastTime);
@@ -137,10 +144,12 @@ int main()
         currentTime = clock.getElapsedTime();
         Time deltaTime = currentTime - lastTime;
         long deltaMS = deltaTime.asMilliseconds();
+
         if (deltaMS > 9) {
             lastTime = currentTime;
             world.UpdatePhysics(deltaMS);
             MoveCrossbow(crossBow, deltaMS);
+
             if (Keyboard::isKeyPressed(Keyboard::Space) &&
                 !drawingArrow) {
                 drawingArrow = true;
@@ -156,10 +165,12 @@ int main()
             if (drawingArrow) {
                 window.draw(arrow);
             }
+
             ducks.DoRemovals();
             for (PhysicsShape& duck : ducks) {
                 window.draw((PhysicsSprite&)duck);
             }
+
             window.draw(crossBow);
             Text scoreText;
             scoreText.setString(to_string(score));
@@ -171,11 +182,10 @@ int main()
             arrowCountText.setFont(fnt);
             arrowCountText.setPosition(Vector2f(20 - GetTextSize(arrowCountText).x, 550));
             window.draw(arrowCountText);
-
             window.display();
-
         }
     }
+
     window.display();
     Text gameOverText;
     gameOverText.setString("GAME OVER");
@@ -185,5 +195,4 @@ int main()
     window.draw(gameOverText);
     window.display();
     while (true);
-
 }
