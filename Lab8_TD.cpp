@@ -50,7 +50,7 @@ SDL_Surface *duck_skins[3]={NULL,NULL,NULL};
 SDL_Rect clip[10];
 
 void Shoot(int cx, int cy){
-    /*for(int i=0; i<ducks.size(); i++){
+    *for(int i=0; i<ducks.size(); i++){
         if(ducks[i].Intersects(cx, cy)){
             ducks[i].Die();
         }
@@ -67,7 +67,7 @@ bool isLocked = false;
 int frame_timer=0;
 int anim_frame = 0;
 void AnimateDucks(std::vector<Duck>& gb, SDL_Surface* destination, SDL_Rect* tiles, int sprites){
-    /*for(int i=0; i<gb.size(); i++){
+    *for(int i=0; i<gb.size(); i++){
         if(frame_timer>50){
             anim_frame = rand()%sprites;
             frame_timer=0;
