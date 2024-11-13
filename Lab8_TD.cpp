@@ -75,7 +75,7 @@ int main() {
             arrow.setTexture(arrowTex);
             arrow.setCenter(crossbow.getCenter());
             arrow.setVelocity(Vector2f(0, -0.3));
-            arrows.add(arrow);
+            arrows.addPhysicsBody(arrow);  // Replaced add with addPhysicsBody
             shotsRemaining--;
         }
 
@@ -84,7 +84,7 @@ int main() {
             duck.setTexture(duckTex);
             duck.setCenter(DUCK_START_POS);
             duck.setVelocity(Vector2f(DUCK_SPEED, 0));
-            ducks.add(duck);
+            ducks.addPhysicsBody(duck);  // Replaced add with addPhysicsBody
             duckSpawnClock.restart();
         }
 
