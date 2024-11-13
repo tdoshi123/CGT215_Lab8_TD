@@ -1,89 +1,153 @@
-// Lab8_TD.cpp : This file contains the 'main' function. Program execution begins and ends there. //
 
-#include "gameobject.h"
-#include "player.h"
-#include "game.h"
-#include "duck.h"
-#include "engine.h"
+// DuckHunter.cpp : Updated version of BalloonBuster to create a Duck Hunter game without sound.
 
 #include <iostream>
-#include <string>
+#include <SFML/Graphics.hpp>
+#include <SFPhysics.h>
 #include <vector>
-#include <time.h>
-#include <unistd.h>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
+using namespace std;
+using namespace sf;
+using namespace sfp;
 
-//Interface ducks types
-enum duck_apparence{
-    ALIVE=0,
-    DEAD=1,
-    ACTUAL=2
-};
+// Constants for game configuration
+const float KB_SPEED = 0.2;
+const int MAX_SHOTS = 5;
+const int DUCK_CREATION_INTERVAL_MS = 1000;  // Time interval to spawn ducks in milliseconds
+const float DUCK_SPEED = 0.1;  // Duck movement speed
+const Vector2f DUCK_START_POS(-50, 50);  // Starting position of ducks off-screen
 
-//GAME INFO
-const int SCREEN_W = 650, SCREEN_H = 600;
-const char GAME_NAME[255] = "Duck Hunt";
-int ENEMY_W, ENEMY_H;
-int ducks_interface[] = {ALIVE, ALIVE, ALIVE, ALIVE, ALIVE, ALIVE, ALIVE, ALIVE, ALIVE, ALIVE};
-SDL_Surface *s_ducks_interface;
-SDL_Rect r_duck_interface[3];
-
-//Fonts
-SDL_Rect r_ammo;
-SDL_Rect r_score;
-SDL_Rect r_hit;
-SDL_Rect r_round;
-SDL_Surface *s_ammo=NULL;
-SDL_Surface *s_score=NULL;
-SDL_Surface *s_round;
-SDL_Surface *s_static_text[4];
-
-//SDL VARIABLES
-SDL_Surface *screen=NULL;
-
-//SPRITES
-SDL_Surface *background=NULL;
-SDL_Surface *duck_skins[3]={NULL,NULL,NULL};
-SDL_Rect clip[10];
-
-void Shoot(int cx, int cy){
-    *for(int i=0; i<ducks.size(); i++){
-        if(ducks[i].Intersects(cx, cy)){
-            ducks[i].Die();
-        }
+// Load texture helper function
+void LoadTex(Texture& tex, string filename) {
+    if (!tex.loadFromFile(filename)) {
+        cout << "Could not load " << filename << endl;
     }
-    Player::ammo--;
-    char aux1[10];
-    sprintf(aux1, "%d", Player::ammo);
-    s_ammo = TTF_RenderText_Shaded(font, aux1, {255,255,255}, {0,0,0});*/
 }
 
-bool isLocked = false;
+// Main game function
+int main() {
+    RenderWindow window(VideoMode(800, 600), "Duck Hunter");
+    window.setFramerateLimit(60);
+    
+    // Crossbow setup
+    Texture crossbowTex;
+    LoadTex(crossbowTex, "crossbow.png");  // Add appropriate path
+    PhysicsSprite crossbow;
+    crossbow.setTexture(crossbowTex);
+    crossbow.setCenter(Vector2f(400, 500));  // Position at bottom of screen
 
+    // Arrow setup
+    Texture arrowTex;
+    LoadTex(arrowTex, "arrow.png");  // Add appropriate path
+    PhysicsShapeList<PhysicsSprite> arrows;
 
-int frame_timer=0;
-int anim_frame = 0;
-void AnimateDucks(std::vector<Duck>& gb, SDL_Surface* destination, SDL_Rect* tiles, int sprites){
-    *for(int i=0; i<gb.size(); i++){
-        if(frame_timer>50){
-            anim_frame = rand()%sprites;
-            frame_timer=0;
+    // Duck setup
+    Texture duckTex;
+    LoadTex(duckTex, "duck.png");  // Use transparent background duck image
+    PhysicsShapeList<PhysicsSprite> ducks;
+
+    // Game state variables
+    int shotsRemaining = MAX_SHOTS;
+    int score = 0;
+    bool gameOver = false;
+    Clock duckSpawnClock;
+    
+    // Font and text for score and shots
+    Font font;
+    font.loadFromFile("arial.ttf");
+    Text scoreText, shotsText, gameOverText;
+    scoreText.setFont(font);
+    shotsText.setFont(font);
+    gameOverText.setFont(font);
+    gameOverText.setString("GAME OVER - Press Space to Restart");
+    gameOverText.setPosition(250, 300);
+    
+    // Game loop
+    while (window.isOpen()) {
+        Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == Event::Closed)
+                window.close();
         }
-        apply_surface(gb[i].x, gb[i].y, gb[i].sprite, screen, &tiles[anim_frame]);
+
+        // Restart game if game over and space is pressed
+        if (gameOver && Keyboard::isKeyPressed(Keyboard::Space)) {
+            gameOver = false;
+            score = 0;
+            shotsRemaining = MAX_SHOTS;
+            ducks.clear();
+            arrows.clear();
+        }
+
+        // Arrow shooting
+        if (!gameOver && Keyboard::isKeyPressed(Keyboard::Space) && shotsRemaining > 0) {
+            PhysicsSprite arrow;
+            arrow.setTexture(arrowTex);
+            arrow.setCenter(crossbow.getCenter());
+            arrow.setVelocity(Vector2f(0, -0.3));  // Move arrow upward
+            arrows.push_back(arrow);
+            shotsRemaining--;
+        }
+
+        // Duck spawning
+        if (duckSpawnClock.getElapsedTime().asMilliseconds() >= DUCK_CREATION_INTERVAL_MS) {
+            PhysicsSprite duck;
+            duck.setTexture(duckTex);
+            duck.setCenter(DUCK_START_POS);
+            duck.setVelocity(Vector2f(DUCK_SPEED, 0));  // Move duck to the right
+            ducks.push_back(duck);
+            duckSpawnClock.restart();
+        }
+
+        // Update arrow positions and detect collisions with ducks
+        for (auto& arrow : arrows) {
+            arrow.update();
+            for (auto& duck : ducks) {
+                if (arrow.getGlobalBounds().intersects(duck.getGlobalBounds())) {
+                    ducks.remove(duck);  // Remove duck
+                    arrows.remove(arrow);  // Remove arrow
+                    score++;
+                    break;  // Only one collision per arrow
+                }
+            }
+        }
+
+        // Remove ducks that reach the right side boundary
+        for (auto& duck : ducks) {
+            duck.update();
+            if (duck.getCenter().x > window.getSize().x) {
+                ducks.remove(duck);
+            }
+        }
+
+        // End game condition
+        if (shotsRemaining == 0 && arrows.size() == 0) {
+            gameOver = true;
+        }
+
+        // Update texts
+        scoreText.setString("Score: " + to_string(score));
+        scoreText.setPosition(600, 550);
+        shotsText.setString("Shots Left: " + to_string(shotsRemaining));
+        shotsText.setPosition(20, 550);
+
+        // Draw everything
+        window.clear();
+        if (!gameOver) {
+            window.draw(crossbow);
+            for (auto& arrow : arrows) {
+                window.draw(arrow);
+            }
+            for (auto& duck : ducks) {
+                window.draw(duck);
+            }
+            window.draw(scoreText);
+            window.draw(shotsText);
+        } else {
+            window.draw(gameOverText);
+        }
+        window.display();
     }
-    frame_timer++;
-    std::cout << frame_timer << std::endl;*/
-}
-
-//-------------
-
-int main ( int argc, char** argv ){
-
-	Engine engine;
-    engine.init();
 
     return 0;
 }
