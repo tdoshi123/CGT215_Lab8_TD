@@ -1,4 +1,4 @@
-// Lab_8.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Lab8_TD.cpp : This is Tirth's File!!! Do not steal pls :) This file contains the 'main' function. Program execution begins and ends there.
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -34,6 +34,7 @@ int main() {
         cout << "Could not load balloonpop.ogg" << endl;
         exit(5);
     }
+
     Sound popSound;
     popSound.setBuffer(popBuffer);
 
@@ -42,6 +43,7 @@ int main() {
         cout << "Failed to load circus.ogg ";
         exit(6);
     }
+
     music.play();
 
     PhysicsSprite& crossBow = *new PhysicsSprite();
@@ -68,6 +70,7 @@ int main() {
     PhysicsShapeList<PhysicsSprite> ducks;
 
     top.onCollision = [&drawingArrow, &world, &arrow]
+
     (PhysicsBodyCollisionResult result) {
         drawingArrow = false;
         world.RemovePhysicsBody(arrow);
@@ -78,6 +81,7 @@ int main() {
         cout << "Could not load font." << endl;
         exit(3);
     }
+
     Clock clock;
     Time lastTime(clock.getElapsedTime());
     Time currentTime(lastTime);
@@ -128,25 +132,30 @@ int main() {
             if (drawingArrow) {
                 window.draw(arrow);
             }
+
             ducks.DoRemovals();
             for (PhysicsShape& duck : ducks) {
                 window.draw((PhysicsSprite&)duck);
             }
-            window.draw(crossBow);
-            Text scoreText;
-            scoreText.setString(to_string(score));
-            scoreText.setFont(fnt);
-            window.draw(scoreText);
-            Text arrowCountText;
-            arrowCountText.setString(to_string(arrows));
-            arrowCountText.setFont(fnt);
-            arrowCountText.setPosition(Vector2f(790 - GetTextSize(arrowCountText).x, 0));
-            window.draw(arrowCountText);
-            //world.VisualizeAllBounds(window);
 
+            window.draw(crossBow);
+            
+            Text arrowCountText;
+            arrowCountText.setString("Arrows: " + to_string(arrows));
+            arrowCountText.setFont(fnt);
+            arrowCountText.setPosition(Vector2f(10, 550));
+            window.draw(arrowCountText);
+
+            Text scoreText;
+            scoreText.setString("Score: " + to_string(score));
+            scoreText.setFont(fnt);
+            scoreText.setPosition(Vector2f(750 - GetTextSize(scoreText).x, 550));
+            window.draw(scoreText);
+            
             window.display();
         }
     }
+
     window.display();
     Text gameOverText;
     gameOverText.setString("GAME OVER");
