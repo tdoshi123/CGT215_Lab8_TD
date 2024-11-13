@@ -1,4 +1,4 @@
-// Lab08DA.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Lab8_TD.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include <iostream>
@@ -42,18 +42,18 @@ int main()
     RenderWindow window(VideoMode(800, 600), "Duck Hunter");
     World world(Vector2f(0, 0));
     int score(0);
-    int arrows(1);
+    int arrows(5);
 
     SoundBuffer popBuffer;
-    if (!popBuffer.loadFromFile("balloonpop.ogg")) {
-        cout << "coul not load balloonpop.ogg" << endl;
+    if (!popBuffer.loadFromFile("assets/sounds/balloonpop.ogg")) {
+        cout << "could not load balloonpop.ogg" << endl;
         exit(5);
     }
     Sound popSound;
     popSound.setBuffer(popBuffer);
 
     Music music;
-    if (!music.openFromFile("circus.ogg")) {
+    if (!music.openFromFile("assets/sounds/circus.ogg")) {
         cout << "Failed to load circus.ogg ";
         exit(6);
     }
@@ -61,7 +61,7 @@ int main()
 
     PhysicsSprite& crossBow = *new PhysicsSprite();
     Texture cbowTex;
-    LoadTex(cbowTex, "images/crossbow.png");
+    LoadTex(cbowTex, "assets/images/crossbow.png");
     crossBow.setTexture(cbowTex);
     Vector2f sz = crossBow.getSize();
     crossBow.setCenter(Vector2f(400,
@@ -69,7 +69,7 @@ int main()
 
     PhysicsSprite arrow;
     Texture arrowTex;
-    LoadTex(arrowTex, "images/arrow.png");
+    LoadTex(arrowTex, "assets/images/arrow.png");
     arrow.setTexture(arrowTex);
     bool drawingArrow(false);
 
@@ -92,7 +92,7 @@ int main()
     world.AddPhysicsBody(right);
 
     Texture redTex;
-    LoadTex(redTex, "images/duck.png");
+    LoadTex(redTex, "assets/images/duck.png");
     PhysicsShapeList<PhysicsSprite> ducks;
     for (int i(0); i < 6; i++) {
         PhysicsSprite& duck = ducks.Create();
@@ -104,7 +104,7 @@ int main()
         world.AddPhysicsBody(duck);
         duck.onCollision =
             [&drawingArrow, &world, &arrow, &duck, &ducks, &score, &popSound]
-        (PhysicsBodyCollisionResult result) {
+            (PhysicsBodyCollisionResult result) {
             if (result.object2 == arrow) {
                 popSound.play();
                 drawingArrow = false;
@@ -113,24 +113,24 @@ int main()
                 ducks.QueueRemove(duck);
                 score += 10;
             }
-        };
+            };
     }
 
     top.onCollision = [&drawingArrow, &world, &arrow]
     (PhysicsBodyCollisionResult result) {
         drawingArrow = false;
         world.RemovePhysicsBody(arrow);
-    };
+        };
 
     Font fnt;
-    if (!fnt.loadFromFile("arial.ttf")) {
+    if (!fnt.loadFromFile("assets/fonts/arial.ttf")) {
         cout << "Could not load font." << endl;
         exit(3);
     }
     Clock clock;
     Time lastTime(clock.getElapsedTime());
     Time currentTime(lastTime);
-    
+
     int arrowShoot(0);
 
     while ((arrows > 0) || drawingArrow || arrowShoot < 5) {
@@ -144,7 +144,7 @@ int main()
             if (Keyboard::isKeyPressed(Keyboard::Space) &&
                 !drawingArrow) {
                 drawingArrow = true;
-                arrows = arrows - 1; 
+                arrows = arrows - 1;
                 arrowShoot++;
                 arrow.setCenter(crossBow.getCenter());
                 arrow.setVelocity(Vector2f(0, -1));
@@ -171,13 +171,12 @@ int main()
             arrowCountText.setFont(fnt);
             arrowCountText.setPosition(Vector2f(20 - GetTextSize(arrowCountText).x, 550));
             window.draw(arrowCountText);
-            //world.VisualizeAllBounds(window);
 
             window.display();
 
         }
     }
-    window.display(); // this is needed to see the last frame
+    window.display();
     Text gameOverText;
     gameOverText.setString("GAME OVER");
     gameOverText.setFont(fnt);
@@ -188,14 +187,3 @@ int main()
     while (true);
 
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
